@@ -11,15 +11,18 @@
 **Actions needed:**
 
 1. **Install Auth0 package:**
+
    ```bash
    npm install @auth0/auth0-react
    ```
 
 2. **Set up environment variables:**
+
    - Create `.env` file in project root
    - Add your Auth0 credentials (domain, client ID, callback URL)
 
 3. **Create Auth0 provider component:**
+
    - Create `src/auth0-provider-with-navigate.js`
    - See this file for complete implementation and detailed explanations
 
@@ -29,6 +32,7 @@
    - **Important:** Must be inside BrowserRouter
 
 **Files to reference:**
+
 - `src/auth0-provider-with-navigate.js` - Complete provider setup with explanations
 - `src/index.js` - Example of correct component wrapping
 
@@ -36,14 +40,44 @@
 
 ---
 
-### Step 2: [Coming Next]
-*Login/Logout buttons and authentication hooks*
+### Step 2: Adding Session Buttons
 
-### Step 3: [Coming Next] 
-*Protected routes and route guards*
+**What you're doing:** Creating login, signup, and logout buttons that trigger Auth0 authentication.
+
+**Actions needed:**
+
+1. **Create login button:**
+
+   - Add `useAuth0` hook to access `loginWithRedirect` method
+   - Configure `appState.returnTo` for post-login navigation
+   - Set `authorizationParams.prompt` for login behavior
+
+2. **Create signup button:**
+
+   - Similar to login but with `screen_hint: "signup"` parameter
+   - Forces Auth0 to show signup form instead of login form
+
+3. **Create logout button:**
+   - Use `logout` method from `useAuth0` hook
+   - Configure `logoutParams.returnTo` for post-logout navigation
+
+**Files to reference:**
+
+- `src/components/buttons/login-button.js` - Login implementation with prompt options explained
+- `src/components/buttons/signup-button.js` - Signup with screen_hint parameter
+- `src/components/buttons/logout-button.js` - Logout configuration
+
+**Result:** Users can now login, signup, and logout, with proper redirects configured.
+
+---
+
+### Step 3: [Coming Next]
+
+_Protected routes and route guards_
 
 ### Step 4: [Coming Next]
-*User profile and role management*
+
+_User profile and role management_
 
 ---
 
