@@ -12,6 +12,11 @@ import { ProtectedPage } from "./pages/protected-page";
 import { PublicPage } from "./pages/public-page";
 
 export const App = () => {
+  /**
+   * Here we are using the useAuth0 hook to get the isLoading property.
+   * This property indicates whether the Auth0 SDK is still loading the authentication state.
+   * It avoids flashing of unauthenticated content while the SDK is initializing. Yeah, the apps get crazy if we don't handle this state properly.
+   */
   const { isLoading } = useAuth0();
 
   if (isLoading) {
