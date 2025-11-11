@@ -1,8 +1,8 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { PageLoader } from "./components/page-loader";
-import { AuthenticationGuard } from "./components/authentication-guard";
+import { PageLoader } from "./components/page-loader"; // A simple loading spinner component
+import { AuthenticationGuard } from "./components/authentication-guard"; // A higher-order component to protect routes
 import { AdminPage } from "./pages/admin-page";
 import { CallbackPage } from "./pages/callback-page";
 import { HomePage } from "./pages/home-page";

@@ -71,9 +71,38 @@
 
 ---
 
-### Step 3: [Coming Next]
+### Step 3: Adding Route Guards
 
-_Protected routes and route guards_
+**What you're doing:** Creating a "watchman" that protects routes from unauthorized access and handles authentication flow.
+
+**Actions needed:**
+
+1. **Create authentication guard component:**
+
+   - Use `withAuthenticationRequired` HOC from Auth0
+   - Configure loading state during authentication checks
+   - Handle redirecting behavior for unauthenticated users
+
+2. **Implement guard in routes:**
+
+   - Wrap protected components with `AuthenticationGuard`
+   - Apply to routes that need user authentication
+   - Leave public routes unprotected
+
+3. **Handle loading states:**
+   - Show loading spinner during Auth0 initialization
+   - Prevent flash of unauthenticated content
+   - Use `isLoading` from `useAuth0` hook
+
+**Files to reference:**
+
+- `src/components/authentication-guard.js` - Guard implementation with Auth0 HOC
+- `src/app.js` - Route structure showing protected vs public routes
+- `src/components/page-loader.js` - Loading component for auth states
+
+**Result:** Protected routes are secure, unauthorized users get redirected to login, and users return to intended route after authentication.
+
+---
 
 ### Step 4: [Coming Next]
 
