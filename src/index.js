@@ -12,6 +12,8 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Auth0ProviderWithNavigate>
+        {" "}
+        {/* Wrapping the app with Auth0 provider that handles navigation */}
         <App />
       </Auth0ProviderWithNavigate>
     </BrowserRouter>
