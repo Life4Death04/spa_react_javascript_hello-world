@@ -136,6 +136,38 @@
 
 ---
 
+### Step 5: Integrating React into External API Server
+
+**What you're doing:** Using Auth0 as Identity and Access Management (IAM) to protect your own custom backend API.
+
+**Actions needed:**
+
+1. **Create custom API hook:**
+
+   - Use `getAccessTokenSilently` to get access tokens (not ID tokens)
+   - Configure audience to match your API identifier
+   - Include token in Authorization header for backend calls
+
+2. **Set up backend token validation:**
+
+   - Install `express-oauth2-jwt-bearer` for token validation
+   - Configure Auth0 domain and audience validation
+   - Apply middleware to protect your API endpoints
+
+3. **Link Auth0 users to your data:**
+   - Use `req.auth.sub` (Auth0 user ID) to identify users in your database
+   - Store custom business data linked to Auth0 user identifiers
+   - Handle scopes/permissions for different API operations
+
+**Files to reference:**
+
+- `src/hooks/useExternalAPI.js` - Custom hook for calling your backend with Auth0 tokens
+- `backend-example/server.js` - Complete Node.js/Express backend example with token validation
+
+**Result:** Your React app can securely call your own backend API using Auth0 access tokens, while Auth0 handles user management and your backend handles business logic.
+
+---
+
 ## ⚠️ Quick Notes
 
 - Environment variables must start with `REACT_APP_`
