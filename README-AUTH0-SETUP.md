@@ -104,9 +104,35 @@
 
 ---
 
-### Step 4: [Coming Next]
+### Step 4: Accessing User Information
 
-_User profile and role management_
+**What you're doing:** Displaying and using authenticated user data from Auth0's ID Token.
+
+**Actions needed:**
+
+1. **Access user object from Auth0:**
+
+   - Use `useAuth0` hook to get user information
+   - Extract user data from decoded ID Token
+   - Handle loading states and null checks
+
+2. **Display user profile data:**
+
+   - Show user's name, email, and profile picture
+   - Access standard OpenID Connect claims
+   - Use user.sub for unique user identification
+
+3. **Understand token differences:**
+   - ID Token = User identity information (what this step uses)
+   - Access Token = API authorization (for calling your backend)
+   - Refresh Token = Getting new tokens without re-login
+
+**Files to reference:**
+
+- `src/pages/profile-page.js` - Complete user information display with explanations
+- `src/components/authentication-guard.js` - How protection enables safe user access
+
+**Result:** You can safely access and display user profile information throughout your protected components.
 
 ---
 
