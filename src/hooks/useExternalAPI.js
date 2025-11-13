@@ -37,10 +37,12 @@ export const useExternalAPI = () => {
        * This is different from the ID token - access tokens are for API authorization.
        *
        * The audience MUST match your API identifier configured in Auth0 dashboard.
+       *
+       * Here, we're requesting the token and we're also specifying scopes (permissions) we want in that token and the API we want to access.
        */
       const accessToken = await getAccessTokenSilently({
         authorizationParams: {
-          audience: "https://my-custom-api.com", // Your API identifier from Auth0
+          audience: process.env.REACT_APP_AUTH0_AUDIENCE, // Your API identifier from Auth0
           scope: "read:posts write:posts read:analytics", // Permissions your app needs
         },
       });

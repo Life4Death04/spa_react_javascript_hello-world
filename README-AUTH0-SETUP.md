@@ -175,3 +175,205 @@
 - Restart dev server after adding `.env` file
 
 **Current Status:** ✅ Foundation Setup Complete
+
+---
+
+## 🎯 Auth0 Authorization Summary
+
+### Frontend (React SPA)
+
+**Goal:** Request access tokens for your API and send them with API calls.
+
+#### 1. Configure Auth0Provider
+Set `audience` and `scope` so tokens are valid for your API:
+
+```javascript
+<Auth0Provider
+  domain="dev-67czjt1nv3ynlrgj.us.auth0.com"  // Your Auth0 tenant
+  clientId="YOUR_CLIENT_ID"
+  authorizationParams={{
+    redirect_uri: window.location.origin,
+    audience: "https://my-custom-api.com",    // Your API Identifier from Auth0 Dashboard
+    scope: "read:posts write:posts",          // Permissions you need
+  }}
+>
+  {children}
+</Auth0Provider>
+```
+
+#### 2. Get Access Token & Call API
+Use `getAccessTokenSilently()` to fetch a token, then send it in `Authorization` header:
+
+```javascript
+const { getAccessTokenSilently } = useAuth0();
+
+const callAPI = async () => {
+  const token = await getAccessTokenSilently({
+    authorizationParams: {
+      audience: "https://my-custom-api.com",
+      scope: "read:posts",
+    },
+  });
+
+  const response = await fetch('https://my-backend.com/api/posts', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return response.json();
+};
+```
+
+**Key Points:**
+- `audience` = which API the token is for
+- Token includes `aud: "https://my-custom-api.com"` and `permissions` (if RBAC enabled)
+- Frontend doesn't enforce permissions; just requests them and sends tokens
+
+---
+
+### Backend (Your API)
+
+**Goal:** Validate tokens and enforce permissions.
+
+#### 1. Create Middleware
+Validate JWT signature, `aud`, `iss`, and expiration:
+
+```typescript
+import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
+
+export const validateAccessToken = auth({
+  audience: "https://my-custom-api.com",          // Must match your API Identifier
+  issuerBaseURL: "https://dev-67czjt1nv3ynlrgj.us.auth0.com",  // Your Auth0 domain
+  tokenSigningAlg: 'RS256',
+});
+
+export const checkPermissions = (permissions: string[]) => {
+  return requiredScopes(...permissions);
+};
+```
+
+#### 2. Protect Routes
+Apply middleware to enforce token validation and permissions:
+
+```typescript
+// Public - no token
+app.get('/api/public', (req, res) => {
+  res.json({ msg: 'Public' });
+});
+
+// Protected - token required
+app.get('/api/posts', validateAccessToken, (req, res) => {
+  res.json([{ id: 1, title: 'Post' }]);
+});
+
+// Protected + permission check
+app.post('/api/posts', 
+  validateAccessToken, 
+  checkPermissions(['write:posts']), 
+  (req, res) => {
+    res.status(201).json({ ok: true });
+  }
+);
+```
+
+**Key Points:**
+- Validates `aud` matches your API Identifier
+- Validates `iss` is your Auth0 domain
+- Checks signature via Auth0's JWKS
+- Enforces `permissions` or `scope` from token
+- Rejects invalid/expired/mismatched tokens
+
+---
+
+### Auth0 Dashboard Setup
+
+**Goal:** Define your API and permissions.
+
+#### 1. Create API
+- **Applications** → **APIs** → **Create API**
+- **Name:** "My Custom API" (friendly name)
+- **Identifier:** `https://my-custom-api.com` (this is your `audience`)
+- **Signing Algorithm:** RS256
+
+#### 2. Enable RBAC & Permissions
+- **Settings** tab:
+  - ✅ Enable RBAC
+  - ✅ Add Permissions in the Access Token
+- **Permissions** tab:
+  - Add: `read:posts`, `write:posts`, `read:analytics`, etc.
+
+#### 3. Create Roles & Assign to Users
+- **User Management** → **Roles** → Create roles (e.g., `post_admin`)
+- Attach permissions to roles
+- Assign roles to users
+
+**Key Points:**
+- API in Auth0 = metadata/config, not the actual API code
+- `audience` (Identifier) = unique string that identifies your API
+- Permissions go into the access token when RBAC is enabled
+- Your backend validates tokens; Auth0 just issues them
+
+---
+
+### Complete Flow
+
+**Step-by-Step:**
+
+1. **User logs in via SPA**
+   - SPA redirects to Auth0 login
+   - User authenticates
+
+2. **Auth0 issues tokens**
+   - **ID Token:** User profile info (for SPA display)
+   - **Access Token:** For calling your API
+     - Contains `aud: "https://my-custom-api.com"`
+     - Contains `permissions: ["read:posts", "write:posts"]` (if RBAC enabled)
+
+3. **SPA calls your API**
+   - Gets access token via `getAccessTokenSilently()`
+   - Sends request with `Authorization: Bearer <token>`
+
+4. **Backend validates token**
+   - Middleware checks:
+     - ✅ `aud` === `"https://my-custom-api.com"`
+     - ✅ `iss` === `"https://dev-67czjt1nv3ynlrgj.us.auth0.com"`
+     - ✅ Signature valid (via JWKS from Auth0)
+     - ✅ Not expired
+   - If valid, extracts `permissions`
+
+5. **Backend enforces authorization**
+   - Checks if token has required permission (e.g., `write:posts`)
+   - ✅ Has permission → allow request
+   - ❌ Missing permission → reject (403)
+
+6. **Backend returns data**
+   - SPA receives response and displays it
+
+---
+
+### Key Concepts Recap
+
+| Term | What It Is | Where It's Used |
+|------|-----------|-----------------|
+| **audience** | API Identifier (e.g., `https://my-custom-api.com`) | Frontend (requests token for it), Backend (validates it) |
+| **domain** | Auth0 tenant URL (e.g., `dev-67czjt1nv3ynlrgj.us.auth0.com`) | Frontend (login), Backend (issuer validation) |
+| **scope** | Requested permissions (e.g., `read:posts write:posts`) | Frontend (what you want in token) |
+| **permissions** | Granted permissions in token (from RBAC) | Backend (what you enforce) |
+| **Access Token** | JWT for calling your API | SPA → API in `Authorization` header |
+| **ID Token** | User profile info | SPA only (display user info) |
+
+---
+
+### Why Each Piece Matters
+
+- **audience in frontend:** Tells Auth0 "I need a token **for this API**" → token gets `aud` claim
+- **audience in backend:** Validates "This token is **for me**" → rejects tokens for other APIs
+- **RBAC + Permissions:** Adds `permissions` array to token → backend enforces fine-grained access
+- **Middleware validation:** Ensures token is authentic, not tampered, not expired, and meant for your API
+- **Permission checks:** Ensures user is authorized to perform specific actions (read vs write)
+
+---
+
+**Complete Picture:** Auth0 = IAM issuing tokens. Your code = frontend requests them, backend validates and enforces them. 🎯

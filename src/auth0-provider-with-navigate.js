@@ -36,6 +36,7 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN; // Your Auth0 tenant domain (e.g., "your-app.auth0.com")
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID; // Unique identifier for your Auth0 application
   const redirectUri = process.env.REACT_APP_AUTH0_CALLBACK_URL; // URL where Auth0 redirects after authentication. Imagine it as your "address" for receiving a delivery
+  const audience = process.env.REACT_APP_AUTH0_AUDIENCE;
 
   /**
    * Callback function that runs after successful authentication
@@ -61,7 +62,7 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
 
   // Safety check: Ensure all required Auth0 configuration is present
   // If any config is missing, don't render the provider (prevents runtime errors)
-  if (!(domain && clientId && redirectUri)) {
+  if (!(domain && clientId && redirectUri && audience)) {
     return null;
   }
 
@@ -71,6 +72,7 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
       domain={domain} // Auth0 tenant domain
       clientId={clientId} // Application client ID
       authorizationParams={{
+        audience: audience, // API audience for access tokens - When we add this property, Auth0 will include an access token in the authentication response that is intended for the specified API. Something like: "Here's a special key that lets you access this specific service"
         redirect_uri: redirectUri, // Where to redirect after login // Keeping in mind the food delivery example: "Here's my address for delivery"
       }}
       onRedirectCallback={onRedirectCallback} // Custom navigation handler  // Keeping in mind the food delivery example: "Here's what to do when delivery arrives"
